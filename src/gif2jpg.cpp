@@ -90,8 +90,41 @@ Handle<Value> convert (const Arguments& args) {
 	return Undefined();
 }
 
+Handle<Value> getType (const Arguments& args) {
+    HandleScope scope;
+
+    if (args.Length() < 1) {
+        return ThrowException (Exception::TypeError (String::New ("Wrong number of arguments.")));
+    }
+
+    if (!args [0]->IsObject()) {
+        return ThrowException (Exception::TypeError (String::New ("First argument must be be a buffer.")));
+    }
+
+    Local<Object> buffer = args [0]->ToObject();
+    const size_t size = Buffer::Length (buffer);
+    const char* data = Buffer::Data (buffer);
+
+    Magick::Blob blob (data, size);
+    Magick::Image image;
+    image.read (blob);
+    string type = image.magick().c_str();
+
+    const unsigned argc = 2;
+    Local<Value> argv [argc] = {
+        Local<Value>::New (Null()),
+        Local<Value>::New (String::New (type.c_str()))
+    };
+
+    Local<Function> callback = Local<Function>::Cast (args [1]);
+    callback->Call (Context::GetCurrent()->Global(), argc, argv);
+
+    return Undefined();   
+}
+
 void RegisterModule (v8::Handle<v8::Object> target) {
      target->Set (String::NewSymbol ("convert"), FunctionTemplate::New (convert)->GetFunction());
+     target->Set (String::NewSymbol ("getType"), FunctionTemplate::New (getType)->GetFunction());
 }
 
 NODE_MODULE (gif2jpg, RegisterModule);
