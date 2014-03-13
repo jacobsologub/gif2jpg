@@ -1,5 +1,17 @@
 {
     "name": "gif2jpg",
+    "description": "A .gif to .jpeg converter using Magick++.",
+    "author": "Jacob Sologub",
     "version": "0.0.1",
-    "main": "./build/Release/gif2jpg"
+    "repository" : {
+        "type" : "git",
+        "url" : "https://github.com/jacobsologub/gif2jpg.git"
+    },
+    "licenses" : [
+    	{
+            "type" : "MIT",
+            "url" : "https://raw.githubusercontent.com/jacobsologub/gif2jpg/master/LICENSE"
+        }
+    ],
+    "main": "./build/Release/gif2jpg",
 }
