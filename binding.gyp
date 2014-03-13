@@ -30,6 +30,16 @@
 					"-lMagickCore-6.Q16",
 					"-lMagickWand-6.Q16"
       			]
+      		}],
+      		['OS=="linux"', {
+      			"include_dirs": [
+    				"/usr/local/include/ImageMagick-6"
+    			],
+    			"libraries": [
+      				"-lMagick++-6.Q16",
+					"-lMagickCore-6.Q16",
+					"-lMagickWand-6.Q16"
+      			]
       		}]
       	]
     }
