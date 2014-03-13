@@ -2,7 +2,7 @@
 #include <node.h>
 #include <node_buffer.h>
 #include <v8.h>
-#include <iostream>
+#include <string.h>
 
 using namespace std;
 using namespace v8;
