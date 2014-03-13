@@ -1,0 +1,5 @@
+{
+    "name": "gif2jpg",
+    "version": "0.0.1",
+    "main": "./build/Release/gif2jpg"
+}
