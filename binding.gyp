@@ -14,8 +14,9 @@
                     'OS=="mac"',
                     {
                         "xcode_settings": {
-                            #Thefollowingsettingsfixthe"dyld: lazy symbol binding failed: Symbol not found""Expected in: dynamic lookup"error.
-                            #https: //github.com/peterbraden/node-opencv/issues/87
+                            
+                            # The following settings fix the "dyld: lazy symbol binding failed: Symbol not found" "Expected in: dynamic lookup" error.
+                            # https: //github.com/peterbraden/node-opencv/issues/87
 
                             'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
                             'OTHER_CFLAGS': [
