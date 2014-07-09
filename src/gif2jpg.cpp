@@ -60,25 +60,25 @@ Handle<Value> convert (const Arguments& args) {
     Local<Object> globalObj = v8::Context::GetCurrent()->Global();
 
     for (list <Magick::Image>::iterator it = imageList.begin(); it != imageList.end(); ++it) {
-    	Magick::Blob blob;
-    	it->write (&blob, "jpeg");
+      	Magick::Blob blob;
+      	it->write (&blob, "jpeg");
 
-    	Buffer* slowBuffer = node::Buffer::New (blob.length());
-    	memcpy (node::Buffer::Data (slowBuffer), blob.data(), blob.length());
-    	Local<Function> bufferConstructor = Local<Function>::Cast (globalObj->Get (String::New ("Buffer")));
+      	Buffer* slowBuffer = node::Buffer::New (blob.length());
+      	memcpy (node::Buffer::Data (slowBuffer), blob.data(), blob.length());
+      	Local<Function> bufferConstructor = Local<Function>::Cast (globalObj->Get (String::New ("Buffer")));
 
-    	Handle<Value> constructorArgs [3] = { 
-    		slowBuffer->handle_, 
-    		Integer::New (blob.length()), 
-    		Integer::New (0) 
-    	};
+      	Handle<Value> constructorArgs [3] = { 
+            slowBuffer->handle_, 
+        		Integer::New (blob.length()), 
+        		Integer::New (0) 
+      	};
 
-    	const int index = distance (imageList.begin(), it);
-    	Local<Object> actualBuffer = bufferConstructor->NewInstance (3, constructorArgs);
-    	bufferArray->Set (index, actualBuffer);
+      	const int index = distance (imageList.begin(), it);
+      	Local<Object> actualBuffer = bufferConstructor->NewInstance (3, constructorArgs);
+      	bufferArray->Set (index, actualBuffer);
     }
 
-	const unsigned argc = 2;
+    const unsigned argc = 2;
     Local<Value> argv [argc] = {
         Local<Value>::New (Null()),
         Local<Value>::New (bufferArray)
@@ -119,7 +119,7 @@ Handle<Value> getType (const Arguments& args) {
     Local<Function> callback = Local<Function>::Cast (args [1]);
     callback->Call (Context::GetCurrent()->Global(), argc, argv);
 
-    return Undefined();   
+    return Undefined();
 }
 
 void RegisterModule (v8::Handle<v8::Object> target) {
