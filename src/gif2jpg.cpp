@@ -216,34 +216,29 @@ Handle<Value> extract (const Arguments& args) {
             Magick::Image image;
             Magick::Blob cropBlob;
 
-            try {
-              image.read (blob);
-              Magick::Geometry originalGeometry = image.size();
-              Magick::Geometry geometry (w->Value(), h->Value(), x->Value(), y->Value());
+            image.read (blob);
+            Magick::Geometry originalGeometry = image.size();
+            Magick::Geometry geometry (w->Value(), h->Value(), x->Value(), y->Value());
 
-              if ((int) (originalGeometry.width() - geometry.xOff()) < 1 || (int) (originalGeometry.height() - geometry.yOff()) < 1) {
-                  continue;
-              }
-
-              image.crop (geometry);
-              image.write (&cropBlob, "jpeg");
-
-              Buffer* slowBuffer = node::Buffer::New (cropBlob.length());
-              memcpy (node::Buffer::Data (slowBuffer), cropBlob.data(), cropBlob.length());
-              Local<Function> bufferConstructor = Local<Function>::Cast (globalObj->Get (String::New ("Buffer")));
-
-              Handle<Value> constructorArgs [3] = { 
-                  slowBuffer->handle_, 
-                  Integer::New (cropBlob.length()), 
-                  Integer::New (0) 
-              };
-
-              Local<Object> actualBuffer = bufferConstructor->NewInstance (3, constructorArgs);
-              bufferArray->Set (i, actualBuffer);
+            if ((int) (originalGeometry.width() - geometry.xOff()) < 1 || (int) (originalGeometry.height() - geometry.yOff()) < 1) {
+                continue;
             }
-            catch (Magick::Exception &e) {
-                printf ("%s\n", e.what());
-            }
+
+            image.crop (geometry);
+            image.write (&cropBlob, "jpeg");
+
+            Buffer* slowBuffer = node::Buffer::New (cropBlob.length());
+            memcpy (node::Buffer::Data (slowBuffer), cropBlob.data(), cropBlob.length());
+            Local<Function> bufferConstructor = Local<Function>::Cast (globalObj->Get (String::New ("Buffer")));
+
+            Handle<Value> constructorArgs [3] = { 
+                slowBuffer->handle_, 
+                Integer::New (cropBlob.length()), 
+                Integer::New (0) 
+            };
+
+            Local<Object> actualBuffer = bufferConstructor->NewInstance (3, constructorArgs);
+            bufferArray->Set (i, actualBuffer);
         }
     }
 
