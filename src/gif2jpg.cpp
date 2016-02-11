@@ -333,12 +333,92 @@ Handle<Value> animate (const Arguments& args) {
     return Undefined();
 }
 
+Handle<Value> composite (const Arguments& args) {
+    if (args.Length() < 2) {
+        return ThrowException (Exception::TypeError (String::New ("Wrong number of arguments.")));
+    }
+
+    if (!args [0]->IsObject()) {
+        return ThrowException (Exception::TypeError (String::New ("First argument must be be an object.")));
+    }
+
+    if (!args [1]->IsFunction()) {
+        return ThrowException (Exception::TypeError (String::New ("Second argument must be a callback function.")));
+    }
+
+    Local<Object> options = args [0]->ToObject();
+
+    Local<Object> buffer = Local<Object>::Cast (options->Get (String::NewSymbol ("buffer")));
+    Local<Object> overlayBuffer = Local<Object>::Cast (options->Get (String::NewSymbol ("overlayBuffer")));
+
+    if (buffer->IsUndefined()) {
+        return ThrowException (Exception::TypeError (String::New ("First argument should have a \"buffer\" key with an image buffer")));
+    }
+
+    if (overlayBuffer->IsUndefined()) {
+        return ThrowException (Exception::TypeError (String::New ("First argument should have a \"overlayBuffer\" key with an image buffer")));
+    }
+
+    Local<Number> compositeOperator = Local<Number>::Cast (options->Get (String::NewSymbol ("operator")));
+    (void) compositeOperator;
+
+    const size_t imageSize = Buffer::Length (buffer);
+    const char* imageData = Buffer::Data (buffer);
+
+    Magick::Blob iamageBlob (imageData, imageSize);
+    Magick::Image image;
+    image.read (iamageBlob);
+
+    const size_t compositeImagesize = Buffer::Length (overlayBuffer);
+    const char* compositeImageData = Buffer::Data (overlayBuffer);
+
+    Magick::Blob overlayBlob (compositeImageData, compositeImagesize);
+    Magick::Image overlayImage;
+    overlayImage.read (overlayBlob);
+
+    Magick::Image finalImage;
+    finalImage.size (image.size());
+    finalImage.matte (true);
+
+    Magick::CompositeOperator op = Magick::CompositeOperator::AtopCompositeOp;
+    finalImage.composite (image, 0, 0, op);
+    finalImage.composite (overlayImage, 0, 0, op);
+
+    Magick::Blob compositedBlob;
+    finalImage.write (&compositedBlob, "jpeg");
+
+    Buffer* slowBuffer = node::Buffer::New (compositedBlob.length());
+    memcpy (node::Buffer::Data (slowBuffer), compositedBlob.data(), compositedBlob.length());
+    Local<Object> globalObj = v8::Context::GetCurrent()->Global();
+    Local<Function> bufferConstructor = Local<Function>::Cast (globalObj->Get (String::New ("Buffer")));
+
+    Handle<Value> constructorArgs [3] = { 
+        slowBuffer->handle_, 
+        Integer::New (compositedBlob.length()), 
+        Integer::New (0) 
+    };
+
+    Local<Object> actualBuffer = bufferConstructor->NewInstance (3, constructorArgs);
+
+    const unsigned argc = 2;
+    Local<Value> argv [argc] = {
+        Local<Value>::New (Null()),
+        Local<Value>::New (actualBuffer)
+    };
+
+    Local<Function> callback = Local<Function>::Cast (args [1]);
+    callback->Call (Context::GetCurrent()->Global(), argc, argv);
+
+    return Undefined();
+}
+
 void RegisterModule (v8::Handle<v8::Object> target) {
      target->Set (String::NewSymbol ("convert"), FunctionTemplate::New (convert)->GetFunction());
      target->Set (String::NewSymbol ("getType"), FunctionTemplate::New (getType)->GetFunction());
      target->Set (String::NewSymbol ("getSize"), FunctionTemplate::New (getSize)->GetFunction());
      target->Set (String::NewSymbol ("extract"), FunctionTemplate::New (extract)->GetFunction());
      target->Set (String::NewSymbol ("animate"), FunctionTemplate::New (animate)->GetFunction());
+     target->Set (String::NewSymbol ("composite"), FunctionTemplate::New (composite)->GetFunction());
 }
 
 NODE_MODULE (gif2jpg, RegisterModule);
